@@ -1,0 +1,6 @@
+@DpTaskManager.Api_HostAddress = http://localhost:5177
+
+GET {{DpTaskManager.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
