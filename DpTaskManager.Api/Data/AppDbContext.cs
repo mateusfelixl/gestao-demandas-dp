@@ -1,4 +1,4 @@
-﻿using DpTaskManager.Api.Moldels;
+﻿using DpTaskManager.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -10,6 +10,8 @@ namespace DpTaskManager.Api.Data
         {
         }
 
+        //Criação da tabela Tarefas
         public DbSet<Tarefa> Tarefas { get; set; }
+        public object Tarefa { get; internal set; }
     }
 }

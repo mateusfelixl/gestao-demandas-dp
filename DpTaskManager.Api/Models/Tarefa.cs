@@ -1,5 +1,6 @@
-﻿namespace DpTaskManager.Api.Moldels
+﻿namespace DpTaskManager.Api.Models
 {
+    //Criação das propriedades da Classe Tarefa
     public class Tarefa
     {
         public int Id { get; set; }
