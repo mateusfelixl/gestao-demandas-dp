@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using DpTaskManager.Api.Data;
+﻿using DpTaskManager.Api.Data;
+using DpTaskManager.Api.DTOs;
 using DpTaskManager.Api.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DpTaskManager.Api.Controllers
 {
@@ -20,10 +21,15 @@ namespace DpTaskManager.Api.Controllers
         // Método responsável por receber os dados do Front-end (Angular/Swagger) 
         // e cadastrar uma nova demanda do Departamento Pessoal no banco de dados.
         [HttpPost]
-        public async Task<ActionResult<Tarefa>> PostTarefas(Tarefa tarefa)
+        public async Task<ActionResult<Tarefa>> PostTarefas(TarefaCreateDto tarefaDto)
         {
-            tarefa.Status = "pendente";
-            tarefa.DataCriacao = DateTime.Now;
+            var tarefa = new Tarefa
+            {
+                Titulo = tarefaDto.Titulo,
+                Descricao = tarefaDto.Descricao ?? string.Empty,
+                Status = "Pendente",
+                DataCriacao = DateTime.Now
+            };
 
             _context.Tarefas.Add(tarefa);
             await _context.SaveChangesAsync();
@@ -34,7 +40,7 @@ namespace DpTaskManager.Api.Controllers
         // GET: api/Tarefas/5
         // Método responsável por buscar os detalhes de uma demanda específica usando o seu ID exclusivo.
         [HttpGet("{id}")]
-        public async Task<ActionResult<Tarefa>> GetTarefa(int id)
+        public async Task<ActionResult<TarefaReadDto>> GetTarefa(int id)
         {
             var tarefa = await _context.Tarefas.FindAsync(id);
 
@@ -43,21 +49,34 @@ namespace DpTaskManager.Api.Controllers
                 return NotFound();
             }
 
-            return tarefa;
+            var tarefaDto = new TarefaReadDto
+            {
+                Id = tarefa.Id,
+                Titulo = tarefa.Titulo,
+                Descricao = tarefa.Descricao,
+                Status = tarefa.Status,
+                DataCriacao = tarefa.DataCriacao
+            };
+
+            return tarefaDto;
         }
 
         // PUT: api/Tarefas/5
         // Método responsável por atualizar os dados ou o status de uma demanda existente.
         // Exige que o ID passado na URL seja idêntico ao ID do objeto enviado.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTarefa(int id, Tarefa tarefa)
+        public async Task<IActionResult> PutTarefa(int id, TarefaUpdateDto tarefaDto) // Recebe o DTO em vez da Entidade
         {
-            if (id != tarefa.Id)
+            var tarefa = await _context.Tarefas.FindAsync(id);
+
+            if (tarefa == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(tarefa).State = EntityState.Modified;
+            tarefa.Titulo = tarefaDto.Titulo;
+            tarefa.Descricao = tarefaDto.Descricao ?? string.Empty; 
+            tarefa.Status = tarefaDto.Status;
 
             try
             {
@@ -76,8 +95,8 @@ namespace DpTaskManager.Api.Controllers
             }
 
             return NoContent();
-
         }
+
         // Método auxiliar privado(Detetive)
         // Utiliza LINQ para fazer uma verificação ultrarrápida no banco de dados.
         // Retorna true se encontrar alguma tarefa com o ID informado, e false se não encontrar.
@@ -106,9 +125,18 @@ namespace DpTaskManager.Api.Controllers
         // GET: api/Tarefas
         // Método responsável por buscar TODAS as demandas cadastradas no banco de dados.
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Tarefa>>> GetTarefas()
+        public async Task<ActionResult<IEnumerable<TarefaReadDto>>> GetTarefas()
         {
-            var tarefas = await _context.Tarefas.ToListAsync();
+            var tarefas = await _context.Tarefas
+                .Select(t => new TarefaReadDto
+                {
+                    Id = t.Id,
+                    Titulo = t.Titulo,
+                    Descricao = t.Descricao,
+                    Status = t.Status,
+                    DataCriacao = t.DataCriacao
+                })
+                .ToListAsync();
 
             return tarefas;
         }

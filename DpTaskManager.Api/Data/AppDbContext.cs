@@ -11,7 +11,7 @@ namespace DpTaskManager.Api.Data
         }
 
         //Criação da tabela Tarefas
-        public DbSet<Tarefa> Tarefas { get; set; }
-        public object Tarefa { get; internal set; }
+        public DbSet<Tarefa> Tarefas { get; set; } = null!;
+
     }
 }
